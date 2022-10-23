@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess as sb
 import json, os, sys
+import platform
 
 def run(exeFile, dpath, cfgFile):
   try:
@@ -51,14 +52,25 @@ def run(exeFile, dpath, cfgFile):
     if p1.returncode > 1:
       print ("* Nastala chyba pri spustení procesu yt-dlp.exe: ")
       raise sb.CalledProcessError(p1.returncode, p1.args)
+  except KeyboardInterrupt:
+    sys.exit(3)      
   except Exception as e:
-    print (f"* Chyba: Výnimka: {e}")
+    print (f"* Chyba: Výnimka {e}")
 
 
 if __name__ == "__main__":
-  exeFile = r'.\yt-dlp.exe'
-  dpath   = r"."
-  cfgFile = r".\myytcmd.json"
+  try:
+    osPS = os.path.sep
 
-  run(exeFile, dpath, cfgFile)
-  input ("\n* Stlač ENTER...")
+    dpath   = "."
+    cfgFile = f".{osPS}myytcmd.json"
+    
+    if platform.system().lower() == "windows":
+      exeFile = f".{osPS}yt-dlp.exe"
+    else:
+      exeFile = f".{osPS}yt-dlp"
+
+    run(exeFile, dpath, cfgFile)
+    input ("\n* Stlač ENTER...")
+  except KeyboardInterrupt:
+    sys.exit(4)
