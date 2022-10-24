@@ -4,8 +4,32 @@ import json, os, sys
 import platform
 
 def run(exeFile, dpath, cfgFile, fenc):
+  # load, test config
+  try:
+    cfgF = {}
+    if os.path.exists(cfgFile):
+      f = open(cfgFile, "r")
+      cfgF = json.load(f)
+      f.close()
+
+      if "download_path" in cfgF  and  cfgF['download_path']:
+        dpath = cfgF['download_path']
+        if not os.path.isdir(dpath):
+          dpath = "."
+
+      if "ytdlp_path" in cfgF  and  cfgF['ytdlp_path']:
+        ypath = cfgF['ytdlp_path']
+        if os.path.exists(ypath):
+          exeFile = ypath
+  except:
+    pass
+
+  if not os.path.exists(exeFile):
+    print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
+    sys.exit(1)
+
   # update yt-dlp
-  print ("* Aktualizujem yt-dlp ...")
+  print (f"* Aktualizujem yt-dlp ({exeFile})...")
   try:
     with sb.Popen([exeFile, '-U'], stdout=sb.PIPE) as u1:
       for line in u1.stdout:
@@ -18,26 +42,10 @@ def run(exeFile, dpath, cfgFile, fenc):
     print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
     sys.exit(1)
 
-  # load, test config
-  try:
-    if os.path.exists(cfgFile):
-      f = open(cfgFile, "r")
-      cfgF = json.load(f)
-      f.close()
-
-      if "download_path" in cfgF  and  cfgF['download_path']:
-        dpath = cfgF['download_path']
-        if not os.path.isdir(dpath):
-          dpath = "."
-          print (f"* Upozornenie: Adresár '{dpath}' neexistuje. Súbory uložím do aktuálneho adresára.")
-        else:
-          print (f"* Informácia: Súbory uložím do adresára '{dpath}'")
-      else:
-        print (f"* Upozornenie: Nesprávna položka v konfigurácii. Súbory uložím do aktuálneho adresára.")        
-    else:
-      print (f"* Upozornenie: Súbor konfigurácie neexistuje. Súbory uložím do aktuálneho adresára.")
-  except:
-    print (f"* Upozornenie: Konfig výnimka. Súbory uložím do aktuálneho adresára.")
+  if dpath == ".":
+    print (f"* Súbory ukladám do aktuálneho adresára.")
+  else:
+    print (f"* Súbory ukladám do: {dpath}")
 
   # download files
   while True:
