@@ -53,7 +53,10 @@ def run(exeFile, dpath, cfgFile, fenc):
 
     try:
       while not adresa:
-        adresa = str(input ("* ---------------\n* Zadajte adresu: "))
+        adresa = str(input ("* ---------------\n* Zadajte adresu (ak skončiť, zadaj n): "))
+
+      if adresa == 'n':
+        break
     
       print ("* Sťahujem:")
 
@@ -68,10 +71,6 @@ def run(exeFile, dpath, cfgFile, fenc):
         print ("* Chyba: Nastala chyba pri spustení procesu yt-dlp ... ")
         raise sb.CalledProcessError(p1.returncode, p1.args)
 
-      again = str(input ("\n* Ak chcete stiahnuť ďalší súbor, stlačte a: ")).lower()
-
-      if again != 'a':
-        break
     except KeyboardInterrupt:
       sys.exit(3)      
     except Exception as e:
