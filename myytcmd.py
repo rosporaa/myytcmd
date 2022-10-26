@@ -50,6 +50,7 @@ def run(exeFile, dpath, cfgFile, fenc):
   # download files
   while True:
     adresa = ""
+    execList = [exeFile, f'-P {dpath}']
 
     try:
       while not adresa:
@@ -57,10 +58,13 @@ def run(exeFile, dpath, cfgFile, fenc):
 
       if adresa == 'n':
         break
+
+      asplit = adresa.strip().split(" ")
+      execList.extend(asplit)
     
       print ("* Sťahujem:")
 
-      with sb.Popen([exeFile, f'{adresa}', f'-P {dpath}'], stdout=sb.PIPE, bufsize=1, text=True, encoding=fenc, errors='backslashreplace') as p1:
+      with sb.Popen(execList, stdout=sb.PIPE, bufsize=1, text=True, encoding=fenc, errors='backslashreplace') as p1:
         for line in p1.stdout:
           if line.find("[download]") != -1:
             print(line.replace("\n", "") + '\r', flush=True, end="")
