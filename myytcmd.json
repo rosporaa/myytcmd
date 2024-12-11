@@ -1,4 +1,9 @@
 {
-  "download_path":"d:\\x\\",
+  "download_path": [ 
+    {"descr":"pecko", "path":"d:\\x\\"},
+    {"descr":"flamenco", "path":"d:\\x\\flamenco\\"},
+    {"descr":"girls", "path": "d:\\x\\girls\\"},
+    {"descr":"filmy", "path": "d:\\x\\filmy\\"}
+  ],
   "ytdlp_path":"c:\\ytdlp.exe"
 }

@@ -11,11 +11,26 @@ def run(exeFile, dpath, cfgFile, fenc):
       f = open(cfgFile, "r")
       cfgF = json.load(f)
       f.close()
+      
+      if "download_path" in cfgF  and  cfgF['download_path']  and  len(cfgF["download_path"]) > 0:
+        j = 1
+        volba = 0
+        for i in cfgF["download_path"]:
+          print (f'{j}. {i["descr"]}\t\t {i["path"]}')
+          j += 1
 
-      if "download_path" in cfgF  and  cfgF['download_path']:
-        dpath = cfgF['download_path']
+        while not volba:
+          try:
+            volba = int(input ("* ---------------\n* Kam ulozit? (zadajte cislo): "))
+          except:
+            volba = 0
+
+          if volba > j-1:
+            volba = 0
+
+        dpath = cfgF["download_path"][volba-1]["path"]
         if not os.path.isdir(dpath):
-          dpath = "."
+          dpath = "."    
 
       if "ytdlp_path" in cfgF  and  cfgF['ytdlp_path']:
         ypath = cfgF['ytdlp_path']
