@@ -21,11 +21,11 @@ def run(exeFile, dpath, cfgFile, fenc):
 
         while not volba:
           try:
-            volba = int(input ("* ---------------\n* Kam ulozit? (zadajte cislo): "))
+            volba = int(input ("* ---------------\n* Kam uložiť? (zadajte číslo): "))
           except:
             volba = 0
 
-          if volba > j-1:
+          if volba > j-1  or  volba < 1:
             volba = 0
 
         dpath = cfgF["download_path"][volba-1]["path"]
@@ -58,9 +58,9 @@ def run(exeFile, dpath, cfgFile, fenc):
     sys.exit(1)
 
   if dpath == ".":
-    print (f"* Súbory ukladám do aktuálneho adresára.")
+    print (f"* Všetky súbory ukladám do aktuálneho adresára.")
   else:
-    print (f"* Súbory ukladám do: {dpath}")
+    print (f"* Všetky súbory ukladám do: {dpath}")
 
   # download files
   while True:
