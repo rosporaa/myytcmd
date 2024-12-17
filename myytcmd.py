@@ -4,6 +4,20 @@ import json, os, sys
 import platform
 
 def run(exeFile, dpath, cfgFile, fenc):
+  try:
+    cfgF = {}
+    if os.path.exists(cfgFile):
+      f = open(cfgFile, "r")
+      cfgF = json.load(f)
+      f.close()
+
+      if "ytdlp_path" in cfgF  and  cfgF['ytdlp_path']:
+        ypath = cfgF['ytdlp_path']
+        if os.path.exists(ypath):
+          exeFile = ypath
+  except:
+    pass
+
   if not os.path.exists(exeFile):
     print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
     sys.exit(1)
@@ -50,11 +64,6 @@ def run(exeFile, dpath, cfgFile, fenc):
         if not os.path.isdir(dpath):
           print (f"* Nenašiel som {dpath}!")
           dpath = "."    
-
-      if "ytdlp_path" in cfgF  and  cfgF['ytdlp_path']:
-        ypath = cfgF['ytdlp_path']
-        if os.path.exists(ypath):
-          exeFile = ypath
   except:
     pass
 
