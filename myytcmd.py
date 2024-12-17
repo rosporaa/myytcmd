@@ -4,41 +4,6 @@ import json, os, sys
 import platform
 
 def run(exeFile, dpath, cfgFile, fenc):
-  # load, test config
-  try:
-    cfgF = {}
-    if os.path.exists(cfgFile):
-      f = open(cfgFile, "r")
-      cfgF = json.load(f)
-      f.close()
-      
-      if "download_path" in cfgF  and  cfgF['download_path']  and  len(cfgF["download_path"]) > 0:
-        j = 1
-        volba = 0
-        for i in cfgF["download_path"]:
-          print (f'{j}. {i["descr"]}\t\t {i["path"]}')
-          j += 1
-
-        while not volba:
-          try:
-            volba = int(input ("* ---------------\n* Kam uložiť? (zadajte číslo): "))
-          except:
-            volba = 0
-
-          if volba > j-1  or  volba < 1:
-            volba = 0
-
-        dpath = cfgF["download_path"][volba-1]["path"]
-        if not os.path.isdir(dpath):
-          dpath = "."    
-
-      if "ytdlp_path" in cfgF  and  cfgF['ytdlp_path']:
-        ypath = cfgF['ytdlp_path']
-        if os.path.exists(ypath):
-          exeFile = ypath
-  except:
-    pass
-
   if not os.path.exists(exeFile):
     print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
     sys.exit(1)
@@ -57,6 +22,42 @@ def run(exeFile, dpath, cfgFile, fenc):
     print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
     sys.exit(1)
 
+  # load, test config
+  try:
+    cfgF = {}
+    if os.path.exists(cfgFile):
+      f = open(cfgFile, "r")
+      cfgF = json.load(f)
+      f.close()
+      
+      if "download_path" in cfgF  and  cfgF['download_path']  and  len(cfgF["download_path"]) > 0:
+        j = 1
+        volba = 0
+        for i in cfgF["download_path"]:
+          print (f'{j}. {i["descr"]:20s}\t{i["path"]}')
+          j += 1
+
+        while not volba:
+          try:
+            volba = int(input ("* ----------------------\n* Kam uložiť? (zadajte číslo): "))
+          except:
+            volba = 0
+
+          if volba > j-1  or  volba < 1:
+            volba = 0
+
+        dpath = cfgF["download_path"][volba-1]["path"]
+        if not os.path.isdir(dpath):
+          print (f"* Nenašiel som {dpath}!")
+          dpath = "."    
+
+      if "ytdlp_path" in cfgF  and  cfgF['ytdlp_path']:
+        ypath = cfgF['ytdlp_path']
+        if os.path.exists(ypath):
+          exeFile = ypath
+  except:
+    pass
+
   if dpath == ".":
     print (f"* Všetky súbory ukladám do aktuálneho adresára.")
   else:
@@ -69,7 +70,7 @@ def run(exeFile, dpath, cfgFile, fenc):
 
     try:
       while not adresa:
-        adresa = str(input ("* ---------------\n* Zadajte adresu (ak skončiť, zadaj n): "))
+        adresa = str(input ("* ----------------------\n* Zadajte adresu (ak skončiť, zadajte n): "))
 
       if adresa == 'n':
         break
