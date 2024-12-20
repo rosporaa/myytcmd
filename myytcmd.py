@@ -1,7 +1,30 @@
 # -*- coding: utf-8 -*-
 import subprocess as sb
-import json, os, sys
+import json, os, sys, stat
 import platform
+import requests
+
+
+def downloadYtWin(exeFile, url):
+  try:
+    r = requests.get(url, stream=True)
+    if r.ok:
+      with open(exeFile, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024 * 8):
+          if chunk:
+            f.write(chunk)
+            f.flush()
+            os.fsync(f.fileno())
+      f.close()
+    else:
+      print(f"* Chyba: sťahovanie skončilo s chybou:\n {r.status_code}\n {r.text}")
+      return -1
+  except Exception as e:
+    print (f"* Chyba: Výnimka {e}")
+    return -1
+
+  return 0   
+
 
 def chooseSaveDir(cfgFile):
   dpath = "."
@@ -44,7 +67,9 @@ def chooseSaveDir(cfgFile):
   return dpath
 
 
-def run(exeFile, dpath, cfgFile, fenc):
+def run(exeFile, dpath, cfgFile, fenc, ytDownloadURL, platforma):
+  justDownloaded = False
+
   try:
     cfgF = {}
     if os.path.exists(cfgFile):
@@ -61,21 +86,32 @@ def run(exeFile, dpath, cfgFile, fenc):
 
   if not os.path.exists(exeFile):
     print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
-    sys.exit(1)
+    if len(ytDownloadURL):
+      print(f"* Pokúsim sa ho stiahnúť, moment prosím...")    
+      if downloadYtWin(exeFile, ytDownloadURL) == -1:
+        sys.exit(1)
+      else:
+        if os.path.exists(exeFile):
+          if platforma.find("linux")  or  platforma.find("cygwin"): 
+            st = os.stat(exeFile)
+            os.chmod(exeFile, st.st_mode | stat.S_IEXEC)
+          justDownloaded = True
+          print (f"* Súbor {exeFile} stiahnutý.")      
 
-  # update yt-dlp
-  print (f"* Aktualizujem yt-dlp ({exeFile})...")
-  try:
-    with sb.Popen([exeFile, '-U'], stdout=sb.PIPE) as u1:
-      for line in u1.stdout:
-        pass #print (line)
+  if not justDownloaded:
+    # update yt-dlp
+    print (f"* Aktualizujem yt-dlp ({exeFile})...")
+    try:
+      with sb.Popen([exeFile, '-U'], stdout=sb.PIPE) as u1:
+        for line in u1.stdout:
+          pass #print (line)
 
-    if u1.returncode != 0:
-      print ("* Upozornenie: Chyba pri aktualizácii, skúsim použiť starú verziu ...")
-      #raise sb.CalledProcessError(u1.returncode, u1.args)  
-  except FileNotFoundError:
-    print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
-    sys.exit(1)
+      if u1.returncode != 0:
+        print ("* Upozornenie: Chyba pri aktualizácii, skúsim použiť starú verziu ...")
+        #raise sb.CalledProcessError(u1.returncode, u1.args)  
+    except FileNotFoundError:
+      print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
+      sys.exit(1)
 
   dpath = chooseSaveDir(cfgFile)
 
@@ -129,23 +165,43 @@ def run(exeFile, dpath, cfgFile, fenc):
       print (f"* Chyba: Výnimka {e}")
       sys.exit(4)
 
+
 # MAIN
 if __name__ == "__main__":
   cfgFileName   = "myytcmd.json"
   ytExecNameUnx = "yt-dlp"
   ytExecNameWin = "yt-dlp.exe"
+  ytExecNameMac = "yt-dlp_macos"
+  ytDownloadURLWin = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe'
+  ytDownloadURLLin = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp'
+  ytDownloadURLMac = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos'
 
   osPS = os.path.sep
 
   dpath   = "."
   cfgFile = f".{osPS}{cfgFileName}"
     
-  if platform.system().lower() == "windows":
-    # cygwin also
+  pt = platform.system().lower() 
+  if pt == "windows":
     fenc = 'cp1250'
     exeFile = f".{osPS}{ytExecNameWin}"
+    ytDownloadURL = ytDownloadURLWin
+  elif pt.find("linux") != -1:
+    fenc = 'utf-8'
+    exeFile = f".{osPS}{ytExecNameUnx}"
+    ytDownloadURL = ytDownloadURLLin
+  elif pt.find("cygwin") != -1:
+    fenc = 'utf-8'    
+    exeFile = f".{osPS}{ytExecNameWin}"
+    ytDownloadURL = ytDownloadURLWin
+  elif pt.find("darwin") != -1:
+    fenc = 'utf-8'    
+    exeFile = f".{osPS}{ytExecNameMac}"
+    ytDownloadURL = ytDownloadURLMac
   else:
     fenc = 'utf-8'
     exeFile = f".{osPS}{ytExecNameUnx}"
+    ytDownloadURL = ""
+    print (f"* Upozornenie: Neznáma platforma. Skúsim použiť {exeFile}.")
 
-  run(exeFile, dpath, cfgFile, fenc)
+  run(exeFile, dpath, cfgFile, fenc, ytDownloadURL, pt)
