@@ -1,7 +1,7 @@
 {
   "download_path": [ 
-    {"descr":"Catg1", "path":"d:\\catg\\1\\"},
-    {"descr":"Catg2", "path": "d:\\catg\\2\\"}
+    {"descr":"Catg1", "path": "c:\\catg\\1\\"},
+    {"descr":"Catg2", "path": "c:\\catg\\2\\"}
   ],
   "ytdlp_path":"c:\\ytdlp.exe"
 }

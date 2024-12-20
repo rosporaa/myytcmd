@@ -3,6 +3,47 @@ import subprocess as sb
 import json, os, sys
 import platform
 
+def chooseSaveDir(cfgFile):
+  dpath = "."
+
+  try:
+    cfgF = {}
+    if os.path.exists(cfgFile):
+      f = open(cfgFile, "r")
+      cfgF = json.load(f)
+      f.close()
+      
+      if "download_path" in cfgF  and  cfgF['download_path']  and  len(cfgF["download_path"]) > 0:
+        j = 1
+        volba = 0
+        for i in cfgF["download_path"]:
+          print (f'{j}. {i["descr"]:26s}\t{i["path"]}')
+          j += 1
+        print (f'{j}. Ukonči program')
+
+        while not volba:
+          try:
+            volba = int(input ("* ------------------------------\n* Kam uložiť? (zadajte číslo): "))
+          except:
+            volba = 0
+
+          if volba == j:
+            sys.exit(6)
+          if volba > j  or  volba < 1:
+            volba = 0
+
+        dpath = cfgF["download_path"][volba-1]["path"]
+        if not os.path.isdir(dpath):
+          print (f"* Upozornenie: Nenašiel som adresár {dpath}")
+          dpath = "."  
+  except SystemExit:
+    sys.exit(6)  
+  except:
+    pass
+
+  return dpath
+
+
 def run(exeFile, dpath, cfgFile, fenc):
   try:
     cfgF = {}
@@ -36,41 +77,12 @@ def run(exeFile, dpath, cfgFile, fenc):
     print(f"* Chyba: Nenašiel som potrebný súbor '{exeFile}'")
     sys.exit(1)
 
-  # load, test config
-  try:
-    cfgF = {}
-    if os.path.exists(cfgFile):
-      f = open(cfgFile, "r")
-      cfgF = json.load(f)
-      f.close()
-      
-      if "download_path" in cfgF  and  cfgF['download_path']  and  len(cfgF["download_path"]) > 0:
-        j = 1
-        volba = 0
-        for i in cfgF["download_path"]:
-          print (f'{j}. {i["descr"]:20s}\t{i["path"]}')
-          j += 1
-
-        while not volba:
-          try:
-            volba = int(input ("* ----------------------\n* Kam uložiť? (zadajte číslo): "))
-          except:
-            volba = 0
-
-          if volba > j-1  or  volba < 1:
-            volba = 0
-
-        dpath = cfgF["download_path"][volba-1]["path"]
-        if not os.path.isdir(dpath):
-          print (f"* Nenašiel som {dpath}!")
-          dpath = "."    
-  except:
-    pass
+  dpath = chooseSaveDir(cfgFile)
 
   if dpath == ".":
-    print (f"* Všetky súbory ukladám do aktuálneho adresára.")
+    print (f"* Súbory ukladám do aktuálneho adresára.")
   else:
-    print (f"* Všetky súbory ukladám do: {dpath}")
+    print (f"* Súbory ukladám do: {dpath}")
 
   # download files
   while True:
@@ -79,10 +91,21 @@ def run(exeFile, dpath, cfgFile, fenc):
 
     try:
       while not adresa:
-        adresa = str(input ("* ----------------------\n* Zadajte adresu (ak skončiť, zadajte n): "))
+        adresa = str(input ("* ------------------------------\n* Zadajte adresu (k - koniec, z - zmena adresára): "))
 
-      if adresa == 'n':
+      if adresa == 'k':
         break
+
+      if adresa == 'z':
+        dpath = chooseSaveDir(cfgFile)
+
+        if dpath == ".":
+          print (f"* Súbory ukladám do aktuálneho adresára.")
+        else:
+          print (f"* Súbory ukladám do: {dpath}")  
+
+        execList = [exeFile, f'-P {dpath}']
+        continue
 
       asplit = adresa.strip().split(" ")
       execList.extend(asplit)
@@ -106,19 +129,23 @@ def run(exeFile, dpath, cfgFile, fenc):
       print (f"* Chyba: Výnimka {e}")
       sys.exit(4)
 
-
+# MAIN
 if __name__ == "__main__":
+  cfgFileName   = "myytcmd.json"
+  ytExecNameUnx = "yt-dlp"
+  ytExecNameWin = "yt-dlp.exe"
+
   osPS = os.path.sep
 
   dpath   = "."
-  cfgFile = f".{osPS}myytcmd.json"
+  cfgFile = f".{osPS}{cfgFileName}"
     
   if platform.system().lower() == "windows":
     # cygwin also
     fenc = 'cp1250'
-    exeFile = f".{osPS}yt-dlp.exe"
+    exeFile = f".{osPS}{ytExecNameWin}"
   else:
     fenc = 'utf-8'
-    exeFile = f".{osPS}yt-dlp"
+    exeFile = f".{osPS}{ytExecNameUnx}"
 
   run(exeFile, dpath, cfgFile, fenc)
